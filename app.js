@@ -1,10 +1,10 @@
-const inventory = window.TCG_INVENTORY || [];
 const grid = document.querySelector('#product-grid');
 const count = document.querySelector('#count');
 const loadMore = document.querySelector('#load-more');
 const PAGE_SIZE = 8;
 let currentFilter = 'all';
 let visible = PAGE_SIZE;
+let inventory = [];
 
 const labels = { singles: 'Single', sealed: 'Sellado', collection: 'Nueva colección' };
 const statusLabels = { available: 'Disponible', sold_out: 'Agotado', coming_soon: 'Próximamente' };
@@ -42,6 +42,29 @@ function render() {
   loadMore.hidden = shown.length >= filtered.length;
 }
 
+// Fetch from Airtable via the API proxy
+async function loadProducts() {
+  try {
+    const resp = await fetch('/api/tcg-products');
+    const data = await resp.json();
+    if (data.products) {
+      inventory = data.products;
+      // Deduplicate by name + price (keep first occurrence)
+      const seen = new Set();
+      inventory = inventory.filter(p => {
+        const key = `${p.name}|${p.price}|${p.currency}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      render();
+    }
+  } catch (err) {
+    console.error('Failed to load products:', err);
+    grid.innerHTML = '<p style="color:#777;text-align:center;padding:60px">Error al cargar el inventario. Intenta de nuevo más tarde.</p>';
+  }
+}
+
 document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => {
   document.querySelector('.filter.active')?.classList.remove('active');
   button.classList.add('active');
@@ -66,4 +89,5 @@ const observer = new IntersectionObserver(entries => entries.forEach(entry => {
 }), { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-render();
+// Start loading
+loadProducts();
