@@ -1,0 +1,2 @@
+# No external dependencies needed
+# Uses Python stdlib: http.server, json, os, urllib.request
