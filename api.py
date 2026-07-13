@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-AIRTABLE_TOKEN = "os.environ.get("AIRTABLE_API_KEY", "")"
+AIRTABLE_TOKEN = os.environ.get("AIRTABLE_API_KEY", "")
 BASE_ID = "appCXMRLvsM7p6gtA"
 TABLE = "Productos%20TCG"
 
